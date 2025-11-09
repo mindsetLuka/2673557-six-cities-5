@@ -1,10 +1,17 @@
+export type Location = {
+  latitude: number;
+  longitude: number;
+};
 export type MockServerData = {
-  categories: string[];
   titles: string[];
   descriptions: string[];
-  offerImages: string[];
-  categoryImages: string[];
-  users: string[];
+  cities: string[];
+  images: string[];
+  types: string[];
+  amenities: string[];
+  userNames: string[];
   emails: string[];
-  avatars: string[];
+  passwords: string[];
+  locations: Location[];
 };
+

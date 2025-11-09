@@ -10,7 +10,7 @@ const RETRY_TIMEOUT = 1000;
 
 @injectable()
 export class MongoDatabaseClient implements DatabaseClient {
-  private mongoose: typeof Mongoose;
+  private mongoose!: typeof Mongoose;
   private isConnected: boolean;
 
   constructor(

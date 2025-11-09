@@ -1,9 +1,8 @@
 import { defaultClasses, getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose';
-import { OfferType } from '../../types/index.js';
-import { CategoryEntity } from '../category/index.js';
+import { Amenities, City, HousingType } from '../../types/index.js';
 import { UserEntity } from '../user/index.js';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 export interface OfferEntity extends defaultClasses.Base {}
 
 @modelOptions({
@@ -11,45 +10,66 @@ export interface OfferEntity extends defaultClasses.Base {}
     collection: 'offers'
   }
 })
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+
 export class OfferEntity extends defaultClasses.TimeStamps {
-  @prop({ trim: true, required: true })
+  @prop({ trim: true, required: true, type: () => String })
   public title!: string;
 
-  @prop({trim: true})
+  @prop({ trim: true, type: () => String })
   public description!: string;
 
-  @prop()
-  public image!: string;
+  @prop({ required: true, default: Date.now, type: () => Date })
+  public postDate!: string;
 
-  @prop()
-  public postDate!: Date;
+  @prop({ required: true, type: () => String })
+  public city: City;
 
-  @prop()
-  public price!: number;
+  @prop({ required: true, type: () => String })
+  public previewImage: string;
+
+  @prop({ required: true, type: () => [String] })
+  public images: string[];
+
+  @prop({default: false, type: () => Boolean})
+  public isPremium: boolean;
+
+  @prop({default: false, type: () => Boolean})
+  public isFavorite: boolean;
+
+  @prop({default: 0, type: () => Number})
+  public rating: number;
 
   @prop({
     type: () => String,
-    enum: OfferType
   })
-  public type!: OfferType;
+  public type!: HousingType;
 
-  @prop({default: 0})
-  public commentCount!: number;
+  @prop({required: true, type: () => Number})
+  public roomsCnt: number;
 
-  @prop({
-    ref: CategoryEntity,
-    required: true,
-    default: [],
-    _id: false
-  })
-  public categories!: Ref<CategoryEntity>[];
+  @prop({required: true, type: () => Number})
+  public peopleCnt: number;
+
+  @prop({required: true, type: () => Number})
+  public price!: number;
+
+  @prop({ default: [], type: () => [String] })
+  public amenities: Amenities[];
 
   @prop({
     ref: UserEntity,
     required: true
   })
-  public userId!: Ref<UserEntity>;
+  public author!: Ref<UserEntity>;
+
+  @prop({default: 0, type: () => Number})
+  public commentsCnt!: number;
+
+  @prop({required: true, type: () => Number})
+  public latitude: number;
+
+  @prop({required: true, type: () => Number})
+  public longitude: number;
 }
 
 export const OfferModel = getModelForClass(OfferEntity);

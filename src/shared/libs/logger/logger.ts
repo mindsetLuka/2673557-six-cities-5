@@ -2,7 +2,13 @@ import { Logger as PinoInstance, pino, transport } from 'pino';
 import { injectable } from 'inversify';
 import { resolve } from 'node:path';
 import { Logger } from './logger.interface.js';
-import { getCurrentModuleDirectoryPath } from '../../helpers/index.js';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+
+function getCurrentModuleDirectoryPath() {
+  const filepath = fileURLToPath(import.meta.url);
+  return dirname(filepath);
+}
 
 @injectable()
 export class PinoLogger implements Logger {
@@ -29,22 +35,22 @@ export class PinoLogger implements Logger {
     });
 
     this.logger = pino({}, multiTransport);
-    this.logger.info('Logger created…');
+    this.logger.info('Logger created...');
   }
 
   public debug(message: string, ...args: unknown[]): void {
-    this.logger.debug(message, ...args);
+    this.logger.debug(args, message);
   }
 
   public error(message: string, error: Error, ...args: unknown[]): void {
-    this.logger.error(error, message, ...args);
+    this.logger.error({ err: error, ...args }, message);
   }
 
   public info(message: string, ...args: unknown[]): void {
-    this.logger.info(message, ...args);
+    this.logger.info(args, message);
   }
 
-  public warn(message: string, ...args: unknown[]): void {
-    this.logger.warn(message, ...args);
+  public warning(message: string, ...args: unknown[]): void {
+    this.logger.warn(args, message);
   }
 }

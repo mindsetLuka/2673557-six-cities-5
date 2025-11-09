@@ -1,15 +1,12 @@
-import { Container } from 'inversify';
-import { OfferService } from './offer-service.interface.js';
-import { Component } from '../../types/index.js';
-import { DefaultOfferService } from './default-offer.service.js';
-import { OfferEntity, OfferModel } from './offer.entity.js';
-import { types } from '@typegoose/typegoose';
+import {OfferService} from './offer-service.interface.js';
+import {Component} from '../../types/index.js';
+import {OfferEntity, OfferModel} from './offer.entity.js';
+import {types} from '@typegoose/typegoose';
+import {DefaultOfferService} from './default-offer.service.js';
+import {ContainerModule, ContainerModuleLoadOptions} from 'inversify';
 
-export function createOfferContainer() {
-  const offerContainer = new Container();
-
-  offerContainer.bind<OfferService>(Component.OfferService).to(DefaultOfferService);
-  offerContainer.bind<types.ModelType<OfferEntity>>(Component.OfferModel).toConstantValue(OfferModel);
-
-  return offerContainer;
-}
+export const offerContainer: ContainerModule = new ContainerModule(
+  (options: ContainerModuleLoadOptions) => {
+    options.bind<OfferService>(Component.OfferService).to(DefaultOfferService);
+    options.bind<types.ModelType<OfferEntity>>(Component.OfferModel).toConstantValue(OfferModel);
+  });
