@@ -7,13 +7,13 @@ import { CommentService } from './comment.service.interface.js';
 import { CreateCommentDto } from './dto/create-comment.dto.js';
 import { ValidateObjectIdMiddleware } from '../../libs/rest/middleware/validate-objectid.middleware.js';
 import { ValidateDtoMiddleware } from '../../libs/rest/middleware/validate-dto.middleware.js';
-import { ANONYMOUS_USER_ID } from '../../../rest/index.js';
+import { AuthMiddleware } from '../../libs/rest/middleware/auth.middleware.js';
 import { DocumentExistsMiddleware } from '../../libs/rest/middleware/document-exist.middleware.js';
 import { OfferService } from '../offer/offer.service.interface.js';
 
 declare module 'express-serve-static-core' {
   interface Request {
-    user: { id: string };
+    user?: { id: string; email: string; name: string; type: string };
   }
 }
 
@@ -43,7 +43,8 @@ export class CommentController extends BaseController {
       middlewares: [
         new ValidateObjectIdMiddleware('offerId'),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId'),
-        new ValidateDtoMiddleware(CreateCommentDto)
+        new ValidateDtoMiddleware(CreateCommentDto),
+        new AuthMiddleware()
       ]
     });
   }
@@ -59,7 +60,7 @@ export class CommentController extends BaseController {
     const dto: CreateCommentDto = {
       ...body,
       offerId: params.offerId,
-      userId: req.user?.id ?? ANONYMOUS_USER_ID,
+      userId: req.user!.id,
     };
 
     const result = await this.commentService.create(dto);

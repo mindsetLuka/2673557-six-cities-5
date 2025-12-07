@@ -6,4 +6,7 @@ export class OfferRdo {
 
   @Expose()
   public title: string;
+
+  @Expose()
+  public isFavorite: boolean;
 }

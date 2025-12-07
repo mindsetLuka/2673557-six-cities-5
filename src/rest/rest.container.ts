@@ -23,6 +23,7 @@ import { DefaultUserService } from '../shared/modules/user/default-user.service.
 import { UserController } from '../shared/modules/user/user.controller.js';
 import { UserEntity, UserModel } from '../shared/modules/user/user.entity.js';
 import { UserService } from '../shared/modules/user/user.service.interface.js';
+import { JwtService } from '../shared/libs/auth/jwt.service.js';
 
 export function createApplicationContainer() {
   const container = new Container();
@@ -32,6 +33,9 @@ export function createApplicationContainer() {
   container.bind<Config<RestSchema>>(Component.Config).to(RestConfig).inSingletonScope();
   container.bind<DatabaseClient>(Component.DatabaseClient).to(MongoDatabaseClient).inSingletonScope();
   container.bind<ExceptionFilter>(Component.ExceptionFilter).to(AppExceptionFilter).inSingletonScope();
+
+  container.bind<JwtService>(Component.JwtService).to(JwtService).inSingletonScope();
+
   container.bind<OfferService>(Component.OfferService).to(DefaultOfferService).inSingletonScope();
   container.bind<types.ModelType<OfferEntity>>(Component.OfferModel).toConstantValue(OfferModel);
   container.bind<Controller>(Component.OfferController).to(OfferController).inSingletonScope();

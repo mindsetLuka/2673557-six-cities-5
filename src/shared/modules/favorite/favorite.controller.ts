@@ -4,6 +4,7 @@ import { BaseController, HttpMethod } from '../../libs/rest/index.js';
 import { Logger } from '../../libs/logger/index.js';
 import { Component } from '../../../shared/types/index.js';
 import { FavoriteService } from './favorite.service.interface.js';
+import { AuthMiddleware } from '../../libs/rest/middleware/auth.middleware.js';
 
 @injectable()
 export class FavoriteController extends BaseController {
@@ -13,23 +14,38 @@ export class FavoriteController extends BaseController {
   ) {
     super(logger);
 
-    this.addRoute({ path: '/:offerId/favorite', method: HttpMethod.Post, handler: this.add });
-    this.addRoute({ path: '/:offerId/favorite', method: HttpMethod.Delete, handler: this.remove });
-    this.addRoute({ path: '/', method: HttpMethod.Get, handler: this.index });
+    this.addRoute({ 
+      path: '/:offerId/favorite', 
+      method: HttpMethod.Post, 
+      handler: this.add,
+      middlewares: [new AuthMiddleware()]
+    });
+    this.addRoute({ 
+      path: '/:offerId/favorite', 
+      method: HttpMethod.Delete, 
+      handler: this.remove,
+      middlewares: [new AuthMiddleware()]
+    });
+    this.addRoute({ 
+      path: '/', 
+      method: HttpMethod.Get, 
+      handler: this.index,
+      middlewares: [new AuthMiddleware()]
+    });
   }
 
   public async add({ params, user }: Request, res: Response): Promise<void> {
-    await this.favoriteService.addToFavorites(user.id, params.offerId);
+    await this.favoriteService.addToFavorites(user!.id, params.offerId);
     this.noContent(res);
   }
 
   public async remove({ params, user }: Request, res: Response): Promise<void> {
-    await this.favoriteService.removeFromFavorites(user.id, params.offerId);
+    await this.favoriteService.removeFromFavorites(user!.id, params.offerId);
     this.noContent(res);
   }
 
   public async index({ user }: Request, res: Response): Promise<void> {
-    const favorites = await this.favoriteService.findFavoritesByUser(user.id);
+    const favorites = await this.favoriteService.findFavoritesByUser(user!.id);
     this.ok(res, favorites);
   }
 }

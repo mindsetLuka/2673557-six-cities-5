@@ -6,10 +6,12 @@ import { Component } from '../shared/types/component.enum.js';
 import { DatabaseClient } from '../shared/libs/database-client/database-client.interface.js';
 import { getMongoURI } from '../shared/helpers/index.js';
 import { Controller, ExceptionFilter } from '../shared/libs/rest/index.js';
+import { ParseTokenMiddleware } from '../shared/libs/rest/middleware/parse-token.middleware.js';
 import { FavoriteController } from '../shared/modules/favorite/favorite.controller.js';
 import { CommentController } from '../shared/modules/comment/comment.controller.js';
 import { UserModel } from '../shared/modules/user/index.js';
 import { UserType } from '../shared/types/index.js';
+import { JwtService } from '../shared/libs/auth/jwt.service.js';
 
 
 export let ANONYMOUS_USER_ID: string;
@@ -41,6 +43,7 @@ export class Application {
     @inject(Component.UserController) private readonly userController: Controller,
     @inject(Component.FavoriteController) private readonly favoriteController: FavoriteController,
     @inject(Component.CommentController) private readonly commentController: CommentController,
+    @inject(Component.JwtService) private readonly jwtService: JwtService,
   ) {
     this.server = express();
   }
@@ -59,6 +62,13 @@ export class Application {
 
   private async _initMiddleware() {
     this.server.use(express.json());
+    
+    // Create middleware wrapper for ParseTokenMiddleware
+    const parseTokenMiddleware = new ParseTokenMiddleware(this.jwtService);
+    this.server.use((req, res, next) => {
+      parseTokenMiddleware.execute(req, res, next).catch(next);
+    });
+    
     this.server.use('/static', express.static(this.config.get('UPLOAD_DIRECTORY')));
   }
 

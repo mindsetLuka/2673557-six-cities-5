@@ -9,10 +9,18 @@ import { StatusCodes } from 'http-status-codes';
 import { fillDTO } from '../../helpers/common.js';
 import { RestSchema } from '../../libs/config/rest.schema.js';
 import { UserRdo } from './rdo/user.rdo.js';
+import { LoggedUserRdo } from './rdo/logged-user.rdo.js';
 import { UserService } from './user.service.interface.js';
 import { LoginUserRequest } from './login-user-request.type.js';
 import { UploadFileMiddleware } from '../../libs/rest/middleware/upload-file.middleware.js';
 import { AuthMiddleware } from '../../libs/rest/middleware/auth.middleware.js';
+import { JwtService } from '../../libs/auth/jwt.service.js';
+
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: { id: string; email: string; name: string; type: string };
+  }
+}
 
 @injectable()
 export class UserController extends BaseController {
@@ -20,6 +28,7 @@ export class UserController extends BaseController {
     @inject(Component.Logger) protected readonly logger: Logger,
     @inject(Component.UserService) private readonly userService: UserService,
     @inject(Component.Config) private readonly configService: Config<RestSchema>,
+    @inject(Component.JwtService) private readonly jwtService: JwtService,
   ) {
     super(logger);
     this.logger.info('Register routes for UserController…');
@@ -60,7 +69,7 @@ export class UserController extends BaseController {
 
   public async login(
     { body }: LoginUserRequest,
-    _res: Response,
+    res: Response,
   ): Promise<void> {
     const existsUser = await this.userService.findByEmail(body.email);
 
@@ -76,16 +85,31 @@ export class UserController extends BaseController {
       throw new HttpError(StatusCodes.UNAUTHORIZED, 'Password is incorrect', 'UserController');
     }
 
-    throw new HttpError(
-      StatusCodes.NOT_IMPLEMENTED,
-      'Not implemented',
-      'UserController',
-    );
+    const token = await this.jwtService.sign({
+      sub: existsUser._id.toString(),
+      email: existsUser.email,
+      name: existsUser.name,
+      type: existsUser.type,
+    });
+
+    const responseData: LoggedUserRdo = {
+      token,
+      email: existsUser.email,
+      avatar: existsUser.avatar,
+      name: existsUser.name,
+      type: existsUser.type,
+    };
+
+    this.ok(res, responseData);
   }
 
   public async uploadAvatar(req: Request, res: Response): Promise<void> {
     if (!req.file) {
       throw new HttpError(StatusCodes.BAD_REQUEST, 'Avatar file is required', 'UserController');
+    }
+
+    if (!req.user) {
+      throw new HttpError(StatusCodes.UNAUTHORIZED, 'User is not authenticated', 'UserController');
     }
 
     const updatedUser = await this.userService.updateAvatar(req.user.id, req.file.filename);
