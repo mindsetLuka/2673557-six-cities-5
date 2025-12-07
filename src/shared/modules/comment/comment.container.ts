@@ -1,10 +1,19 @@
-import { ContainerModule, ContainerModuleLoadOptions } from 'inversify';
+import { Container } from 'inversify';
+import { DefaultCommentService } from './default-comment.service.js';
+import { CommentEntity, CommentModel } from './comment.entity.js';
+import { CommentService } from './comment.service.interface.js';
 import { types } from '@typegoose/typegoose';
-import { Component } from '../../types/index.js';
-import { CommentEntity, CommentModel, DefaultCommentService, CommentService } from './index.js';
+import { Component } from '../../types/component.enum.js';
 
-export const commentContainer: ContainerModule = new ContainerModule(
-  (options: ContainerModuleLoadOptions) => {
-    options.bind<CommentService>(Component.CommentService).to(DefaultCommentService).inSingletonScope();
-    options.bind<types.ModelType<CommentEntity>>(Component.CommentModel).toConstantValue(CommentModel);
-  });
+export function createCommentContainer() {
+  const commentContainer = new Container();
+
+  commentContainer.bind<CommentService>(Component.CommentService)
+    .to(DefaultCommentService)
+    .inSingletonScope();
+
+  commentContainer.bind<types.ModelType<CommentEntity>>(Component.CommentModel)
+    .toConstantValue(CommentModel);
+
+  return commentContainer;
+}

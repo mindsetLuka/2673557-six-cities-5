@@ -1,8 +1,9 @@
-import { defaultClasses, getModelForClass, prop, modelOptions } from '@typegoose/typegoose';
-import { User, UserType } from '../../types/index.js';
+import { defaultClasses, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 import { createSHA256 } from '../../helpers/index.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { User, UserType } from '../../../types/index.js';
 
-/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface UserEntity extends defaultClasses.Base {}
 
 @modelOptions({
@@ -11,28 +12,29 @@ export interface UserEntity extends defaultClasses.Base {}
   }
 })
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class UserEntity extends defaultClasses.TimeStamps implements User {
-  @prop({ required: true, default: '', trim: true, type: () => String })
-  public name: string;
+  @prop({ required: true })
+  public name!: string;
 
-  @prop({ unique: true, required: true, trim: true, type: () => String })
-  public email: string;
+  @prop({ unique: true, required: true })
+  public email!: string;
 
-  @prop({ required: false, default: '', trim: true, type: () => String })
-  public avatarPicPath?: string;
+  @prop({ required: false })
+  public avatar?: string;
 
-  @prop({ required: true, type: () => String })
-  public password: string;
+  @prop({ required: true })
+  public password!: string;
 
-  @prop({ required: true, default: 'обычный', type: () => String })
-  public type: UserType;
+  @prop({ required: true, enum: UserType })
+  public type!: UserType;
 
-  constructor(userData: User) {
+  constructor(userData: CreateUserDto) {
     super();
 
-    this.email = userData.email;
-    this.avatarPicPath = userData.avatarPicPath ;
     this.name = userData.name;
+    this.email = userData.email;
+    this.avatar = userData.avatar;
     this.type = userData.type;
   }
 
@@ -42,6 +44,11 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
 
   public getPassword() {
     return this.password;
+  }
+
+  public verifyPassword(password: string, salt: string) {
+    const hash = createSHA256(password, salt);
+    return this.password === hash;
   }
 }
 

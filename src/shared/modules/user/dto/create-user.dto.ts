@@ -1,10 +1,9 @@
-import { UserType } from '../../../types/index.js';
+import { UserType } from '../../../../types/user';
 
 export class CreateUserDto {
-  public name: string;
-  public email: string;
-  public avatarPicPath?: string;
-  public password: string;
-  public type: UserType;
+  public name!: string;
+  public email!: string;
+  public avatar?: string;
+  public password!: string;
+  public type!: UserType;
 }
-
